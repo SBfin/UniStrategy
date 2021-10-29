@@ -1,0 +1,265 @@
+{
+  "abi": [],
+  "allSourcePaths": {
+    "17": "C:/Users/silvi/.brownie/packages/Uniswap/uniswap-v3-core@1.0.0/contracts/libraries/FixedPoint96.sol"
+  },
+  "ast": {
+    "absolutePath": "C:/Users/silvi/.brownie/packages/Uniswap/uniswap-v3-core@1.0.0/contracts/libraries/FixedPoint96.sol",
+    "exportedSymbols": {
+      "FixedPoint96": [
+        6145
+      ]
+    },
+    "id": 6146,
+    "license": "GPL-2.0-or-later",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 6137,
+        "literals": [
+          "solidity",
+          ">=",
+          "0.4",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "45:24:17"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "library",
+        "documentation": {
+          "id": 6138,
+          "nodeType": "StructuredDocumentation",
+          "src": "71:174:17",
+          "text": "@title FixedPoint96\n @notice A library for handling binary fixed point numbers, see https://en.wikipedia.org/wiki/Q_(number_format)\n @dev Used in SqrtPriceMath.sol"
+        },
+        "fullyImplemented": true,
+        "id": 6145,
+        "linearizedBaseContracts": [
+          6145
+        ],
+        "name": "FixedPoint96",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": true,
+            "id": 6141,
+            "mutability": "constant",
+            "name": "RESOLUTION",
+            "nodeType": "VariableDeclaration",
+            "scope": 6145,
+            "src": "272:39:17",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint8",
+              "typeString": "uint8"
+            },
+            "typeName": {
+              "id": 6139,
+              "name": "uint8",
+              "nodeType": "ElementaryTypeName",
+              "src": "272:5:17",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint8",
+                "typeString": "uint8"
+              }
+            },
+            "value": {
+              "hexValue": "3936",
+              "id": 6140,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "309:2:17",
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_96_by_1",
+                "typeString": "int_const 96"
+              },
+              "value": "96"
+            },
+            "visibility": "internal"
+          },
+          {
+            "constant": true,
+            "id": 6144,
+            "mutability": "constant",
+            "name": "Q96",
+            "nodeType": "VariableDeclaration",
+            "scope": 6145,
+            "src": "317:59:17",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 6142,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "317:7:17",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "hexValue": "307831303030303030303030303030303030303030303030303030",
+              "id": 6143,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "349:27:17",
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_79228162514264337593543950336_by_1",
+                "typeString": "int_const 79228162514264337593543950336"
+              },
+              "value": "0x1000000000000000000000000"
+            },
+            "visibility": "internal"
+          }
+        ],
+        "scope": 6146,
+        "src": "245:134:17"
+      }
+    ],
+    "src": "45:335:17"
+  },
+  "bytecode": "60566023600b82828239805160001a607314601657fe5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205d809f8b3c68f728ea79872836c95c0c38fb39ac05598db193aaaa1160f4149464736f6c63430007060033",
+  "bytecodeSha1": "3b4158955f564edb18bd7a8ffdb49859c904f0b7",
+  "compiler": {
+    "evm_version": "istanbul",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "version": "0.7.6+commit.7338295f"
+  },
+  "contractName": "FixedPoint96",
+  "coverageMap": {
+    "branches": {
+      "17": {}
+    },
+    "statements": {
+      "17": {}
+    }
+  },
+  "dependencies": [],
+  "deployedBytecode": "73000000000000000000000000000000000000000030146080604052600080fdfea26469706673582212205d809f8b3c68f728ea79872836c95c0c38fb39ac05598db193aaaa1160f4149464736f6c63430007060033",
+  "deployedSourceMap": "245:134:17:-:0;;;;;;;;",
+  "language": "Solidity",
+  "natspec": {
+    "details": "Used in SqrtPriceMath.sol",
+    "kind": "dev",
+    "methods": {},
+    "notice": "A library for handling binary fixed point numbers, see https://en.wikipedia.org/wiki/Q_(number_format)",
+    "title": "FixedPoint96",
+    "version": 1
+  },
+  "offset": [
+    245,
+    379
+  ],
+  "opcodes": "PUSH20 0x0 ADDRESS EQ PUSH1 0x80 PUSH1 0x40 MSTORE PUSH1 0x0 DUP1 REVERT INVALID LOG2 PUSH5 0x6970667358 0x22 SLT KECCAK256 0x5D DUP1 SWAP16 DUP12 EXTCODECOPY PUSH9 0xF728EA79872836C95C 0xC CODESIZE 0xFB CODECOPY 0xAC SDIV MSIZE DUP14 0xB1 SWAP4 0xAA 0xAA GT PUSH1 0xF4 EQ SWAP5 PUSH5 0x736F6C6343 STOP SMOD MOD STOP CALLER ",
+  "pcMap": {
+    "0": {
+      "offset": [
+        245,
+        379
+      ],
+      "op": "PUSH20",
+      "path": "17",
+      "value": "0x0"
+    },
+    "21": {
+      "fn": null,
+      "offset": [
+        245,
+        379
+      ],
+      "op": "ADDRESS",
+      "path": "17"
+    },
+    "22": {
+      "fn": null,
+      "offset": [
+        245,
+        379
+      ],
+      "op": "EQ",
+      "path": "17"
+    },
+    "23": {
+      "fn": null,
+      "offset": [
+        245,
+        379
+      ],
+      "op": "PUSH1",
+      "path": "17",
+      "value": "0x80"
+    },
+    "25": {
+      "fn": null,
+      "offset": [
+        245,
+        379
+      ],
+      "op": "PUSH1",
+      "path": "17",
+      "value": "0x40"
+    },
+    "27": {
+      "fn": null,
+      "offset": [
+        245,
+        379
+      ],
+      "op": "MSTORE",
+      "path": "17"
+    },
+    "28": {
+      "fn": null,
+      "offset": [
+        245,
+        379
+      ],
+      "op": "PUSH1",
+      "path": "17",
+      "value": "0x0"
+    },
+    "30": {
+      "fn": null,
+      "offset": [
+        245,
+        379
+      ],
+      "op": "DUP1",
+      "path": "17"
+    },
+    "31": {
+      "fn": null,
+      "offset": [
+        245,
+        379
+      ],
+      "op": "REVERT",
+      "path": "17"
+    }
+  },
+  "sha1": "3a3ab5c10385c523c1738b9eb9d86dcd5f59c3f4",
+  "source": "// SPDX-License-Identifier: GPL-2.0-or-later\npragma solidity >=0.4.0;\n\n/// @title FixedPoint96\n/// @notice A library for handling binary fixed point numbers, see https://en.wikipedia.org/wiki/Q_(number_format)\n/// @dev Used in SqrtPriceMath.sol\nlibrary FixedPoint96 {\n    uint8 internal constant RESOLUTION = 96;\n    uint256 internal constant Q96 = 0x1000000000000000000000000;\n}\n",
+  "sourceMap": "245:134:17:-:0;;;;;;;;;;;;;;;;;;;;;;;;;",
+  "sourcePath": "C:/Users/silvi/.brownie/packages/Uniswap/uniswap-v3-core@1.0.0/contracts/libraries/FixedPoint96.sol",
+  "type": "library"
+}
