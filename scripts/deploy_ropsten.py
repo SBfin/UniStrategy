@@ -13,8 +13,8 @@ import time
 import os
 
 
-# Uniswap v3 factory on Rinkeby
-FACTORY = "0xAE28628c0fdFb5e54d60FEDC6C9085199aec14dF"
+# Uniswap v3 factory on Ropsten
+FACTORY="0x1F98431c8aD98523631AE4a59f267346ea31F984"
 
 PROTOCOL_FEE = 10000
 MAX_TOTAL_SUPPLY = 1e32

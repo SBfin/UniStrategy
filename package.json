@@ -8,6 +8,7 @@
     "lint:fix": "prettier --write **/*.sol"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^4.3.2",
     "prettier": "^2.2.1",
     "prettier-plugin-solidity": "^1.0.0-beta.10",
     "solhint-plugin-prettier": "0.0.5"
