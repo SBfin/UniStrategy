@@ -34,6 +34,7 @@ def test_strategy_rebalance(
     liquidity, _, _, owed0, owed1 = pool.positions(
         computePositionKey(vault, baseLower, baseUpper)
     )
+    
     assert liquidity == owed0 == owed1 == 0
     liquidity, _, _, owed0, owed1 = pool.positions(
         computePositionKey(vault, limitLower, limitUpper)
