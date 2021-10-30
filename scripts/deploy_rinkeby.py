@@ -11,10 +11,10 @@ from brownie.network.gas.strategies import GasNowScalingStrategy
 from math import floor, sqrt
 import time
 import os
-
+from brownie import Contract
 
 # Uniswap v3 factory on Rinkeby
-FACTORY = "0xAE28628c0fdFb5e54d60FEDC6C9085199aec14dF"
+FACTORY = "0x1f98431c8ad98523631ae4a59f267346ea31f984"
 
 PROTOCOL_FEE = 10000
 MAX_TOTAL_SUPPLY = 1e32
@@ -33,32 +33,42 @@ def main():
     UniswapV3Core = project.load("Uniswap/uniswap-v3-core@1.0.0")
 
     gas_strategy = GasNowScalingStrategy()
-
+    print(gas_strategy)
+    "Mock token 1"
+    #rinkeby eth = Contract("0x280E6Bf7566d29782aA5C4351f65CBB10fd815eD")
     eth = deployer.deploy(MockToken, "ETH", "ETH", 18)
+    
+    "Mock token 2"
+    #rinkeby usdc = Contract("0xA34425d4c291757E35bAC44D0761e34fdE7D33c6")
     usdc = deployer.deploy(MockToken, "USDC", "USDC", 6)
 
-    eth.mint(deployer, 100 * 1e18)
-    usdc.mint(deployer, 100000 * 1e6)
+    #they are already minted
+    eth.mint(deployer, 100 * 1e18, {"from": deployer})
+    usdc.mint(deployer, 100000 * 1e6, {"from": deployer})
+    
     
     factory = UniswapV3Core.interface.IUniswapV3Factory(FACTORY)
-    factory.createPool(eth, usdc, 3000, {"from": deployer})
+    factory.createPool(eth, usdc, 3000, {"from": deployer })
     time.sleep(15)
 
     pool = UniswapV3Core.interface.IUniswapV3Pool(factory.getPool(eth, usdc, 3000))
-
+    print(pool)
     inverse = pool.token0() == usdc
     price = 1e18 / 2000e6 if inverse else 2000e6 / 1e18
 
     # Set ETH/USDC price to 2000
+    
     pool.initialize(
         floor(sqrt(price) * (1 << 96)), {"from": deployer}
     )
+    
 
     # Increase cardinality so TWAP works
+    
     pool.increaseObservationCardinalityNext(
         100, {"from": deployer}
     )
-
+    
     router = deployer.deploy(TestRouter)
     MockToken.at(eth).approve(
         router, 1 << 255, {"from": deployer}
@@ -72,14 +82,14 @@ def main():
     router.mint(
         pool, -max_tick, max_tick, 1e14, {"from": deployer}
     )
-
+    
     vault = deployer.deploy(
         AlphaVault,
         pool,
         PROTOCOL_FEE,
         MAX_TOTAL_SUPPLY,
-        publish_source=True,
-        gas_price=gas_strategy,
+        publish_source=True
+        
     )
     """
     strategy = deployer.deploy(

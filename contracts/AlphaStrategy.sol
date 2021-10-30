@@ -55,6 +55,7 @@ contract AlphaStrategy {
      * @param _twapDuration TWAP duration in seconds for rebalance check
      * @param _keeper Account that can call `rebalance()`
      */
+    
     constructor(
         address _vault,
         int24 _baseThreshold,
@@ -96,7 +97,7 @@ contract AlphaStrategy {
 
         // Check price is not too close to min/max allowed by Uniswap. Price
         // shouldn't be this extreme unless something was wrong with the pool.
-        int24 tick = getTick();
+        int24 tick = getTick(); //current price
         int24 maxThreshold =
             _baseThreshold > _limitThreshold ? _baseThreshold : _limitThreshold;
         require(tick > TickMath.MIN_TICK + maxThreshold + tickSpacing, "tick too low");
@@ -105,12 +106,14 @@ contract AlphaStrategy {
         // Check price has not moved a lot recently. This mitigates price
         // manipulation during rebalance and also prevents placing orders
         // when it's too volatile.
-        int24 twap = getTwap();
-        int24 deviation = tick > twap ? tick - twap : twap - tick;
-        require(deviation <= maxTwapDeviation, "maxTwapDeviation");
+        int24 twap = getTwap(); // time weighted average
+        int24 deviation = tick > twap ? tick - twap : twap - tick; //deviation to be positive
+        require(deviation <= maxTwapDeviation, "maxTwapDeviation"); 
 
-        int24 tickFloor = _floor(tick);
-        int24 tickCeil = tickFloor + tickSpacing;
+        // Defining a lower and upper bound on tick (current price)
+        // tickCeil > tickFloor
+        int24 tickFloor = _floor(tick); 
+        int24 tickCeil = tickFloor + tickSpacing; 
 
         vault.rebalance(
             0,
@@ -156,7 +159,8 @@ contract AlphaStrategy {
         require(threshold <= TickMath.MAX_TICK, "threshold too high");
         require(threshold % _tickSpacing == 0, "threshold % tickSpacing");
     }
-
+    
+    ///Deployer set keeper
     function setKeeper(address _keeper) external onlyGovernance {
         keeper = _keeper;
     }
