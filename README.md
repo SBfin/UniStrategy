@@ -16,6 +16,14 @@ Run tests
 
 `brownie test`
 
+To run a single test
+
+`brownie test test\test_rebalance.py`
+
+To run a single test with print option
+
+`brownie test test\test_rebalance.py -s`
+
 To deploy, modify the parameters in `scripts/deploy_mainnet.py` and run:
 
 `brownie run deploy_mainnet`
@@ -46,3 +54,4 @@ brownie account new id
 To deploy
 
 `brownie run deploy_rinkeby --network rinkeby`
+
