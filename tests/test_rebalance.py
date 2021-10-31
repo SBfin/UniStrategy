@@ -23,6 +23,9 @@ def test_strategy_rebalance(
     baseLower, baseUpper = vault.baseLower(), vault.baseUpper()
     limitLower, limitUpper = vault.limitLower(), vault.limitUpper()
 
+    tick = pool.slot0()[1]
+    print("Starting tick \n" + str(tick))
+
     print("baseLower \n" + str(baseLower) + "\n" + 
     "baseUpper \n" + str(baseUpper) + "\n" + 
     "limitLower \n" + str(limitLower) + "\n" + 
@@ -84,6 +87,11 @@ def test_strategy_rebalance(
     else:
         assert base[0] > 0
         assert limit[0] > 0
+
+    print("after rebalance : baseLower \n" + str(vault.baseLower()) + "\n" + 
+    "baseUpper \n" + str(vault.baseUpper()) + "\n" + 
+    "limitLower \n" + str(vault.limitLower()) + "\n" + 
+    "limitUpper \n" + str(vault.limitUpper()))
 
     # Check no tokens left unused. Only small amount left due to rounding
     assert tokens[0].balanceOf(vault) - vault.accruedProtocolFees0() < 1000
