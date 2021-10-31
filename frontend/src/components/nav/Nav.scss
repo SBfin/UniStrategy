@@ -1,0 +1,77 @@
+@import './src/styles/colors.scss';
+
+nav {
+  position: relative;
+  margin: 0 1rem 8rem;
+  width: 100%;
+}
+
+.left {
+  position: absolute;
+  left: 0;
+}
+
+.mid {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.logo {
+  //background-image: url(../../assets/logo.png);
+  background-repeat: no-repeat;
+  height: 36px;
+  width: 48px;
+}
+
+.wallet-info-section {
+  background-color: $dark3;
+  border: 2px solid $dark2;
+  border-radius: .5rem;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  padding: .5rem;
+  margin-right: .5rem;
+  transition: border .15s ease-out;
+}
+
+.wallet-info-content {
+  display: flex;
+  align-items: center;
+}
+
+.wallet-info-section:last-child {
+  margin-right: 0;
+}
+
+.wallet-info-section:hover {
+  border-color: $link-blue;
+  cursor: pointer;
+}
+
+.right {
+  position: absolute;
+  right: 0;
+  display: flex;
+}
+
+.menu-item {
+  background-color: $dark2;
+  height: 2.5rem;
+  width: 2.5rem;
+  line-height: 2.5rem;
+  border-radius: .5rem;
+  margin-right: .75rem;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: background-color .15s ease-out;
+}
+
+.menu-item:hover {
+  background-color: $dark3;
+}
+
+.menu-item:last-child {
+  margin-right: 0;
+}

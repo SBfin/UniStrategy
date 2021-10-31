@@ -11,10 +11,10 @@ from brownie.network.gas.strategies import GasNowScalingStrategy
 from math import floor, sqrt
 import time
 import os
-from brownie import Contract
 
-# Uniswap v3 factory on Rinkeby
-FACTORY = "0x1f98431c8ad98523631ae4a59f267346ea31f984"
+
+# Uniswap v3 factory on Ropsten
+FACTORY="0x1F98431c8aD98523631AE4a59f267346ea31F984"
 
 PROTOCOL_FEE = 10000
 MAX_TOTAL_SUPPLY = 1e32
@@ -37,33 +37,28 @@ def main():
     eth = deployer.deploy(MockToken, "ETH", "ETH", 18, publish_source=True)
     usdc = deployer.deploy(MockToken, "USDC", "USDC", 6)
 
-    #they are already minted
-    eth.mint(deployer, 100 * 1e18, {"from": deployer})
-    usdc.mint(deployer, 100000 * 1e6, {"from": deployer})
-    
+    eth.mint(deployer, 100 * 1e18)
+    usdc.mint(deployer, 100000 * 1e6)
     
     factory = UniswapV3Core.interface.IUniswapV3Factory(FACTORY)
-    factory.createPool(eth, usdc, 3000, {"from": deployer })
+    factory.createPool(eth, usdc, 3000, {"from": deployer})
     time.sleep(15)
 
     pool = UniswapV3Core.interface.IUniswapV3Pool(factory.getPool(eth, usdc, 3000))
-    print(pool)
+
     inverse = pool.token0() == usdc
     price = 1e18 / 2000e6 if inverse else 2000e6 / 1e18
 
     # Set ETH/USDC price to 2000
-    
     pool.initialize(
         floor(sqrt(price) * (1 << 96)), {"from": deployer}
     )
-    
 
     # Increase cardinality so TWAP works
-    
     pool.increaseObservationCardinalityNext(
         100, {"from": deployer}
     )
-    
+
     router = deployer.deploy(TestRouter)
     MockToken.at(eth).approve(
         router, 1 << 255, {"from": deployer}
@@ -77,7 +72,7 @@ def main():
     router.mint(
         pool, -max_tick, max_tick, 1e14, {"from": deployer}
     )
-    
+
     vault = deployer.deploy(
         AlphaVault,
         pool,
