@@ -1,6 +1,8 @@
 import Loader from '../loader/Loader';
 import ETHBalance from '../eth/EthBalance';
 import TokenBalance from '../eth/TokenBalance';
+import {TotalSupply,GetVault} from '../eth/vault';
+import { useState, useEffect } from 'react'
 
 import './Main.scss';
 
@@ -10,13 +12,16 @@ const ENTER_KEY_CODE = 'Enter';
 
 export default function Main(props) {
   const isButtonDisabled = props.fetching;
+  const vault = GetVault("0x2c15A315610Bfa5248E4CbCbd693320e9D8E03Cc")
 
 
   return (
     <div className="main-container">
       
+
       <div className="element">
-        <label className="paste-label" style={{textAlign: 'center', width: "100%"}}>ETH/USDC Vault</label>
+        <label className="paste-label" style={{textAlign: 'center', width: "100%"}}>ETH/USDC Vault Supply: 
+        <span style={{color: 'green'}}> {TotalSupply(vault)}</span></label>
       </div>
       
       <div className="element">
