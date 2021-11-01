@@ -69,8 +69,9 @@ contract UniVault is
 
     int24 public baseLower;
     int24 public baseUpper;
-    int24 public limitLower;
-    int24 public limitUpper;
+    /* Silvio: removing range
+        int24 public limitLower;
+        int24 public limitUpper; */
     uint256 public accruedProtocolFees0;
     uint256 public accruedProtocolFees1;
 
@@ -133,7 +134,10 @@ contract UniVault is
 
         // Poke positions so vault's current holdings are up-to-date
         _poke(baseLower, baseUpper);
+
+        /* Silvio removing ranges
         _poke(limitLower, limitUpper);
+        _poke(askLower, askUpper); */
 
         // Calculate amounts proportional to vault's holdings
         (shares, amount0, amount1) = _calcSharesAndAmounts(amount0Desired, amount1Desired);
@@ -230,12 +234,16 @@ contract UniVault is
         // Withdraw proportion of liquidity from Uniswap pool
         (uint256 baseAmount0, uint256 baseAmount1) =
             _burnLiquidityShare(baseLower, baseUpper, shares, totalSupply);
+
+        /* Silvio removing ranges
         (uint256 limitAmount0, uint256 limitAmount1) =
             _burnLiquidityShare(limitLower, limitUpper, shares, totalSupply);
+        (uint256 askAmount0, uint256 askAmount1) =
+            _burnLiquidityShare(askLower, askUpper, shares, totalSupply); */
 
         // Sum up total amounts owed to recipient
-        amount0 = unusedAmount0.add(baseAmount0).add(limitAmount0);
-        amount1 = unusedAmount1.add(baseAmount1).add(limitAmount1);
+        amount0 = unusedAmount0.add(baseAmount0); //.add(limitAmount0).add(askAmount0)
+        amount1 = unusedAmount1.add(baseAmount1); //.add(limitAmount1).add(askAmount1);
         require(amount0 >= amount0Min, "amount0Min");
         require(amount1 >= amount1Min, "amount1Min");
 
@@ -278,33 +286,29 @@ contract UniVault is
      Rebalance steps uniform strategy:
      1) Withdraw liquidity from uni pools
      2) Swap so to have 50%-50% assets
-     3) Allocate liquidity to contigous bins (ex. 40% in base order, the rest in bid and ask)
      */
     function rebalance(
         int256 swapAmount,
         uint160 sqrtPriceLimitX96,
         int24 _baseLower,
-        int24 _baseUpper,
-        int24 _bidLower,
-        int24 _bidUpper,
-        int24 _askLower,
-        int24 _askUpper
+        int24 _baseUpper
     ) external nonReentrant {
         require(msg.sender == strategy, "strategy");
         _checkRange(_baseLower, _baseUpper);
+        /*
         _checkRange(_bidLower, _bidUpper);
-        _checkRange(_askLower, _askUpper);
+        _checkRange(_askLower, _askUpper);*/
 
         (, int24 tick, , , , , ) = pool.slot0();
+        /*
         require(_bidUpper <= tick, "bidUpper");
-        require(_askLower > tick, "askLower"); // inequality is strict as tick is rounded down
+        require(_askLower > tick, "askLower"); */
+        // inequality is strict as tick is rounded down
 
         // Withdraw all current liquidity from Uniswap pool
         {
             (uint128 baseLiquidity, , , , ) = _position(baseLower, baseUpper);
-            (uint128 limitLiquidity, , , , ) = _position(limitLower, limitUpper);
             _burnAndCollect(baseLower, baseUpper, baseLiquidity);
-            _burnAndCollect(limitLower, limitUpper, limitLiquidity);
         }
 
         // Emit snapshot to record balances and supply
@@ -328,15 +332,9 @@ contract UniVault is
             balance1 = getBalance1();
         }
 
-        //Silvio: creating a variable to set how much liquidity goes in base order.
-        //Ask and bid take residual liquidity, no need to set variable
-        uint256 liquidityShareBase = SafeMath.div(40 , 100);
-        uint256 BaseBalance0 = SafeMath.mul(balance0 , liquidityShareBase);
-        uint256 BaseBalance1 = SafeMath.mul(balance1 , liquidityShareBase);
 
         // Place base order on Uniswap
-        // Silvio: inserting BaseBalance0 and BaseBalance1 here
-        uint128 liquidity = _liquidityForAmounts(_baseLower, _baseUpper, BaseBalance0, BaseBalance1);
+        uint128 liquidity = _liquidityForAmounts(_baseLower, _baseUpper, balance0, balance1);
         _mintLiquidity(_baseLower, _baseUpper, liquidity);
         (baseLower, baseUpper) = (_baseLower, _baseUpper);
 
@@ -344,15 +342,6 @@ contract UniVault is
         balance0 = getBalance0();
         balance1 = getBalance1();
 
-        // Place bid or ask order on Uniswap depending on which token is left
-        // Silvio: removing if condition
-        uint128 bidLiquidity = _liquidityForAmounts(_bidLower, _bidUpper, balance0, balance1);
-        uint128 askLiquidity = _liquidityForAmounts(_askLower, _askUpper, balance0, balance1);
-        _mintLiquidity(_bidLower, _bidUpper, bidLiquidity);
-        (limitLower, limitUpper) = (_bidLower, _bidUpper);
-        _mintLiquidity(_askLower, _askUpper, askLiquidity);
-        (limitLower, limitUpper) = (_askLower, _askUpper);
-        
     }
 
     function _checkRange(int24 tickLower, int24 tickUpper) internal view {
@@ -429,10 +418,11 @@ contract UniVault is
      */
     function getTotalAmounts() public view override returns (uint256 total0, uint256 total1) {
         (uint256 baseAmount0, uint256 baseAmount1) = getPositionAmounts(baseLower, baseUpper);
-        (uint256 limitAmount0, uint256 limitAmount1) =
-            getPositionAmounts(limitLower, limitUpper);
-        total0 = getBalance0().add(baseAmount0).add(limitAmount0);
-        total1 = getBalance1().add(baseAmount1).add(limitAmount1);
+        /*
+        (uint256 limitAmount0, uint256 limitAmount1) = getPositionAmounts(limitLower, limitUpper);
+        (uint256 askAmount0, uint256 askAmount1) = getPositionAmounts(askLower, askUpper);*/
+        total0 = getBalance0().add(baseAmount0);//.add(limitAmount0).add(askAmount0);
+        total1 = getBalance1().add(baseAmount1);//.add(limitAmount1).add(askAmount0);
     }
 
     /**

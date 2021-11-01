@@ -37,7 +37,7 @@ contract UniStrategy {
     int24 public immutable tickSpacing;
 
     int24 public baseThreshold;
-    int24 public limitThreshold;
+    //int24 public limitThreshold;
     int24 public maxTwapDeviation;
     uint32 public twapDuration;
     address public keeper;
@@ -48,7 +48,7 @@ contract UniStrategy {
     /**
      * @param _vault Underlying Alpha Vault
      * @param _baseThreshold Used to determine base order range
-     * @param _limitThreshold Used to determine limit order range
+     
      * @param _maxTwapDeviation Max deviation from TWAP during rebalance
      * @param _twapDuration TWAP duration in seconds for rebalance check
      * @param _keeper Account that can call `rebalance()`
@@ -57,7 +57,7 @@ contract UniStrategy {
     constructor(
         address _vault,
         int24 _baseThreshold,
-        int24 _limitThreshold,
+        //int24 _limitThreshold,
         int24 _maxTwapDeviation,
         uint32 _twapDuration,
         address _keeper
@@ -70,13 +70,13 @@ contract UniStrategy {
         tickSpacing = _tickSpacing;
 
         baseThreshold = _baseThreshold;
-        limitThreshold = _limitThreshold;
+        //limitThreshold = _limitThreshold;
         maxTwapDeviation = _maxTwapDeviation;
         twapDuration = _twapDuration;
         keeper = _keeper;
 
         _checkThreshold(_baseThreshold, _tickSpacing);
-        _checkThreshold(_limitThreshold, _tickSpacing);
+        //_checkThreshold(_limitThreshold, _tickSpacing);
         require(_maxTwapDeviation > 0, "maxTwapDeviation");
         require(_twapDuration > 0, "twapDuration");
 
@@ -93,7 +93,7 @@ contract UniStrategy {
         require(msg.sender == keeper, "keeper");
         
         int24 _baseThreshold = baseThreshold;
-        int24 _limitThreshold = limitThreshold;
+        //int24 _limitThreshold = limitThreshold;
 
         // Check price is not too close to min/max allowed by Uniswap. Price
         // shouldn't be this extreme unless something was wrong with the pool.
@@ -120,29 +120,12 @@ contract UniStrategy {
         int24 tickCeil = tickFloor + tickSpacing; 
 
         // Silvio
-        // Base order: current price +- base 
-        // Bid order lower: currentprice - base - limitthreshold
-        // Bid order upper: currentprice - base
-        // Ask order lower: current price
-        // Ask order upper: current price + limitthreshold
-        // SwapAmount should bring the total liquidity to 50 - 50 --> insert swap amount logic here (or vault?)
-        
-        int24 _baseLower = tickFloor - _baseThreshold;
-        int24 _baseUpper = tickCeil + _baseThreshold;
-        int24 _bidLower = tickFloor - _baseThreshold - _limitThreshold;
-        int24 _bidUpper = tickFloor - _baseThreshold;
-        int24 _askLower = tickCeil + _baseThreshold;
-        int24 _askUpper = tickCeil + _baseThreshold + _limitThreshold;
-        
+        // Base order only       
         vault.rebalance(
             swapAmount,
             minPrice,
-            _baseLower, 
-            _baseUpper,
-            _bidLower,
-            _bidUpper,
-            _askLower,
-            _askUpper
+            tickFloor - _baseThreshold, 
+            tickCeil + _baseThreshold
         );
 
         lastRebalance = block.timestamp;
@@ -189,10 +172,11 @@ contract UniStrategy {
         baseThreshold = _baseThreshold;
     }
 
+    /*
     function setLimitThreshold(int24 _limitThreshold) external onlyGovernance {
         _checkThreshold(_limitThreshold, tickSpacing);
         limitThreshold = _limitThreshold;
-    }
+    }*/
 
     function setMaxTwapDeviation(int24 _maxTwapDeviation) external onlyGovernance {
         require(_maxTwapDeviation > 0, "maxTwapDeviation");
