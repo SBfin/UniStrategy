@@ -6,7 +6,7 @@ __pycache__
 
 node_modules/
 reports/
-build/
+/build/
 
 OpenZeppelin/
 Uniswap/
@@ -14,3 +14,4 @@ Uniswap/
 flat.sol
 
 .env
+.idea
