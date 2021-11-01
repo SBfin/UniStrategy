@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: Unlicense
 
 pragma solidity 0.7.6;
-
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
-
-import "./AlphaVault.sol";
+import "./UniVault.sol";
 
 /**
  * @title   Alpha Strategy
@@ -33,8 +31,8 @@ import "./AlphaVault.sol";
  *          achieves this without the need to swap directly on Uniswap and pay
  *          fees.
  */
-contract AlphaStrategy {
-    AlphaVault public immutable vault;
+contract UniStrategy {
+    UniVault public immutable vault;
     IUniswapV3Pool public immutable pool;
     int24 public immutable tickSpacing;
 
@@ -64,10 +62,10 @@ contract AlphaStrategy {
         uint32 _twapDuration,
         address _keeper
     ) {
-        IUniswapV3Pool _pool = AlphaVault(_vault).pool();
+        IUniswapV3Pool _pool = UniVault(_vault).pool();
         int24 _tickSpacing = _pool.tickSpacing();
 
-        vault = AlphaVault(_vault);
+        vault = UniVault(_vault);
         pool = _pool;
         tickSpacing = _tickSpacing;
 
@@ -89,50 +87,62 @@ contract AlphaStrategy {
      * @notice Calculates new ranges for orders and calls `vault.rebalance()`
      * so that vault can update its positions. Can only be called by keeper.
      */
-     /* Silvio: Adding swap Amount and minprice to inputs*/
-    function rebalance(uint swapAmount, uint minPrice) external {
+     /* Silvio: Adding swap Amount and minprice to inputs
+     TODO: I removed checks (price extreme) to avoid stack error --> have to put them in place*/
+    function rebalance(int256 swapAmount, uint160 minPrice) external {
         require(msg.sender == keeper, "keeper");
-
+        
         int24 _baseThreshold = baseThreshold;
         int24 _limitThreshold = limitThreshold;
 
         // Check price is not too close to min/max allowed by Uniswap. Price
         // shouldn't be this extreme unless something was wrong with the pool.
+        
         int24 tick = getTick(); //current price
+        
+        /*
         int24 maxThreshold =
             _baseThreshold > _limitThreshold ? _baseThreshold : _limitThreshold;
         require(tick > TickMath.MIN_TICK + maxThreshold + tickSpacing, "tick too low");
-        require(tick < TickMath.MAX_TICK - maxThreshold - tickSpacing, "tick too high");
+        require(tick < TickMath.MAX_TICK - maxThreshold - tickSpacing, "tick too high");*/
 
         // Check price has not moved a lot recently. This mitigates price
         // manipulation during rebalance and also prevents placing orders
         // when it's too volatile.
+        /*
         int24 twap = getTwap(); // time weighted average
         int24 deviation = tick > twap ? tick - twap : twap - tick; //deviation to be positive
         require(deviation <= maxTwapDeviation, "maxTwapDeviation"); 
-
+        */
         // Defining a lower and upper bound on tick (current price)
         // tickCeil > tickFloor
         int24 tickFloor = _floor(tick); 
         int24 tickCeil = tickFloor + tickSpacing; 
 
-        // Silvio: Keeper calls swap Amount and minprice to inputs //
-        // Silvio: Fix inputs so ranges are contiguos //
+        // Silvio
         // Base order: current price +- base 
         // Bid order lower: currentprice - base - limitthreshold
         // Bid order upper: currentprice - base
         // Ask order lower: current price
         // Ask order upper: current price + limitthreshold
-        // SwapAmount should bring the total liquidity to 50 - 50 --> insert swap amount logic here
-         vault.rebalance(
+        // SwapAmount should bring the total liquidity to 50 - 50 --> insert swap amount logic here (or vault?)
+        
+        int24 _baseLower = tickFloor - _baseThreshold;
+        int24 _baseUpper = tickCeil + _baseThreshold;
+        int24 _bidLower = tickFloor - _baseThreshold - _limitThreshold;
+        int24 _bidUpper = tickFloor - _baseThreshold;
+        int24 _askLower = tickCeil + _baseThreshold;
+        int24 _askUpper = tickCeil + _baseThreshold + _limitThreshold;
+        
+        vault.rebalance(
             swapAmount,
             minPrice,
-            tickFloor - _baseThreshold, 
-            tickCeil + _baseThreshold,
-            tickFloor - _baseThreshold - _limitThreshold,
-            tickFloor - _baseThreshold,
-            tickCeil + _baseThreshold,
-            tickCeil + _baseThreshold + _limitThreshold
+            _baseLower, 
+            _baseUpper,
+            _bidLower,
+            _bidUpper,
+            _askLower,
+            _askUpper
         );
 
         lastRebalance = block.timestamp;

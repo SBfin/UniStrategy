@@ -21,7 +21,7 @@ import "../interfaces/IVault.sol";
  * @title   Alpha Vault
  * @notice  A vault that provides liquidity on Uniswap V3.
  */
-contract AlphaVault is
+contract UniVault is
     IVault,
     IUniswapV3MintCallback,
     IUniswapV3SwapCallback,
@@ -273,6 +273,13 @@ contract AlphaVault is
      * should use up all of one token, leaving only the other one. This excess
      * amount is then placed as a single-sided bid or ask order.
      */
+
+     /*Silvio: 
+     Rebalance steps uniform strategy:
+     1) Withdraw liquidity from uni pools
+     2) Swap so to have 50%-50% assets
+     3) Allocate liquidity to contigous bins (ex. 40% in base order, the rest in bid and ask)
+     */
     function rebalance(
         int256 swapAmount,
         uint160 sqrtPriceLimitX96,
@@ -307,8 +314,8 @@ contract AlphaVault is
 
         // Compute swap amount
         // balance of the tokens should be same
-
         // TODO : swap here to maintain 50%      
+        
         if (swapAmount != 0) {
             pool.swap(
                 address(this),
@@ -323,9 +330,9 @@ contract AlphaVault is
 
         //Silvio: creating a variable to set how much liquidity goes in base order.
         //Ask and bid take residual liquidity, no need to set variable
-        uint liquidityShareBase = 0.4;
-        uint BaseBalance0 = balance0 * liquidityShareBase;
-        uint BaseBalance1 = balance1 * liquidityShareBase;
+        uint256 liquidityShareBase = SafeMath.div(40 , 100);
+        uint256 BaseBalance0 = SafeMath.mul(balance0 , liquidityShareBase);
+        uint256 BaseBalance1 = SafeMath.mul(balance1 , liquidityShareBase);
 
         // Place base order on Uniswap
         // Silvio: inserting BaseBalance0 and BaseBalance1 here
