@@ -6,11 +6,11 @@ import ERC20ABI from "./abi/MockToken.json";
 import {formatUnits} from "@ethersproject/units";
 
 
-export default function TokenBalance({address}){
+export default function TokenBalance({address, decimals, setDecimals}){
   const {account, library, chainId} = useWeb3React()
 
   const [balance, setBalance] = useState()
-  const [decimals, setDecimals] = useState()
+  //const [decimals, setDecimals] = useState()
 
   useEffect(async () => {
     if (!(!!account || !!library)) {
@@ -23,13 +23,14 @@ export default function TokenBalance({address}){
 
     contract.balanceOf(account)
         .then((balance) => {
-          setBalance(balance)
+          setBalance(balance.toString())
         }).catch((err) => {
           console.log(err);
           setBalance(null);
-        })  
+        })
     contract.decimals()
         .then((result) => {
+          console.log("Decimals: ", result.toString())
           setDecimals(result);
         }).catch((err) => {
             console.log(err);
