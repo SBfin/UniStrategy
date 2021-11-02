@@ -77,10 +77,10 @@ def tokens(MockToken, pool):
 
 
 @pytest.fixture
-def vault(AlphaVault, AlphaStrategy, pool, router, tokens, gov, users, keeper):
+def vault(UniVault, UniStrategy, pool, router, tokens, gov, users, keeper):
     # protocolFee = 10000 (1%)
     # maxTotalSupply = 100e18 (100 tokens)
-    vault = gov.deploy(AlphaVault, pool, 10000, 100e18)
+    vault = gov.deploy(UniVault, pool, 10000, 100e18)
 
     for u in users:
         tokens[0].approve(vault, 100e18, {"from": u})
@@ -90,15 +90,15 @@ def vault(AlphaVault, AlphaStrategy, pool, router, tokens, gov, users, keeper):
     # limitThreshold = 1200
     # maxTwapDeviation = 200000 (just a big number)
     # twapDuration = 600 (10 minutes)
-    strategy = gov.deploy(AlphaStrategy, vault, 2400, 1200, 200000, 600, keeper)
+    strategy = gov.deploy(UniStrategy, vault, 1200, 200000, 600, keeper)
     vault.setStrategy(strategy, {"from": gov})
 
     yield vault
 
 
 @pytest.fixture
-def strategy(AlphaStrategy, vault):
-    return AlphaStrategy.at(vault.strategy())
+def strategy(UniStrategy, vault):
+    return UniStrategy.at(vault.strategy())
 
 
 @pytest.fixture
@@ -167,7 +167,7 @@ def vaultOnlyWithToken1(vault, strategy, pool, router, gov, keeper):
 # hypothesis tests where function-scoped fixtures are not allowed
 @pytest.fixture(scope="module")
 def createPoolVaultStrategy(
-    pm, AlphaVault, AlphaStrategy, MockToken, router, gov, keeper, users
+    pm, UniVault, UniStrategy, MockToken, router, gov, keeper, users
 ):
     UniswapV3Core = pm(UNISWAP_V3_CORE)
 
@@ -193,12 +193,12 @@ def createPoolVaultStrategy(
         pool.increaseObservationCardinalityNext(100, {"from": gov})
         chain.sleep(3600)
 
-        vault = gov.deploy(AlphaVault, pool, 10000, 100e18)
+        vault = gov.deploy(UniVault, pool, 10000, 100e18)
         for u in users:
             tokenA.approve(vault, 100e18, {"from": u})
             tokenB.approve(vault, 10000e18, {"from": u})
 
-        strategy = gov.deploy(AlphaStrategy, vault, 2400, 1200, 200000, 600, keeper)
+        strategy = gov.deploy(UniStrategy, vault, 2400, 1200, 200000, 600, keeper)
         vault.setStrategy(strategy, {"from": gov})
         return pool, vault, strategy
 
