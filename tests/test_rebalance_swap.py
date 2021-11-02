@@ -3,9 +3,37 @@ from pytest import approx
 
 
 
-def test_rebalance_swap(vault, strategy, pool, user, keeper):
+""""
+Ranges are set correctly
+"""
+def test_rebalance_swap(vault, 
+    strategy, 
+    pool, 
+    user, 
+    keeper,
+    tokens):
     min_sqrt = 4295128739
     max_sqrt = 1461446703485210103287273052203988822378723970342
+
+    tick = pool.slot0()[1]
+    print("tick \n" + str(tick))
+    tickFloor = tick // 60 * 60
+    print("tick floor\n" + str(tick))
+
+    price = 1.0001 ** pool.slot0()[1]
+    print("tick \n" + str(pool.slot0()[1]))
+    print("price \n" + str(price))
+
+    #check vault ranges
+    baseLower = vault.baseLower()
+    baseUpper = vault.baseUpper()
+    baseLowerPrice = 1.0001**baseLower
+    baseUpperPrice = 1.0001**baseUpper
+    print("baseLower tick is \n" + str(baseLower) 
+    + "\n" +
+    "baseUpper tick is \n" + str(baseUpper) + "\n" +
+    "baseLower price is \n" + str(baseLowerPrice) + "\n" +
+    "baseUpper price is \n" + str(baseUpperPrice))
 
     # Mint some liquidity
     # usdc 6 decimals, eth 18
@@ -17,45 +45,39 @@ def test_rebalance_swap(vault, strategy, pool, user, keeper):
     print("total0 \n" + str(total0) + "\n" + 
     "total1 \n" + str(total1) + "\n")
     vault.rebalance(
-        1e8, # 10 
+        1e9, # 10 
         min_sqrt + 1,
-        -60000, # tickFLoor - baseTreshold
+        - 60000, # tickFLoor - baseTreshold
         60000, # tickCeil + baseTreshold
         {"from": strategy},
     )
 
     total0After, total1After = vault.getTotalAmounts()
 
-    print("total0After \n" + str(total0After) + "\n" + 
+    print("In liquidity pools: \n total0After \n" + str(total0After) + "\n" + 
     "total1After \n" + str(total1After) + "\n")
+
+    balance0 = vault.getBalance0()
+    balance1 = vault.getBalance1()
+    print("In vault: \n" + str(balance0) + "\n" + 
+    "total1After \n" + str(balance1) + "\n")
 
     # assert approx(total0 - total0After) == 1e8
     # assert total1 < total1After
+    baseLower = vault.baseLower()
+    baseUpper = vault.baseUpper()
+    baseLowerPrice = 1.0001**baseLower
+    baseUpperPrice = 1.0001**baseUpper
+
+    print("baseLower tick is \n" + str(baseLower) 
+    + "\n" +
+    "baseUpper tick is \n" + str(baseUpper) + "\n" +
+    "baseLower price is \n" + str(baseLowerPrice) + "\n" +
+    "baseUpper price is \n" + str(baseUpperPrice))
 
     price = 1.0001 ** pool.slot0()[1]
-    print("price of current tick \n", + str(pool.slot0()[1]))
-    print("price of current tick \n" + str(price))
-    # assert approx(total0 * price + total1) == total0After * price + total1
+    print("tick \n" + str(pool.slot0()[1]))
+    print("price \n" + str(price))
 
-    # total0, total1 = vault.getTotalAmounts()
-    # print("total0 \n" + str(total0) + "\n" + 
-    # "total1 \n" + str(total1) + "\n")
-
-    # vault.rebalance(
-    #     -1e8,
-    #     max_sqrt - 1,
-    #     -60000,
-    #     60000,
-    #     {"from": strategy},
-    # )
-
-    # total0After, total1After = vault.getTotalAmounts()
-
-    # print("total0After \n" + str(total0After) + "\n" + 
-    # "total1After \n" + str(total1After) + "\n")
-
-    # assert approx(total1 - total1After) == 1e8
-    # assert total0 < total0After
-
-    # price = 1.0001 ** pool.slot0()[1]
-    # assert approx(total0 * price + total1) == total0After * price + total1
+    assert vault.baseLower() == - 60000
+    assert vault.baseUpper() == 60000
