@@ -1,8 +1,10 @@
 import Loader from '../loader/Loader';
 import ETHBalance from '../eth/EthBalance';
 import TokenBalance from '../eth/TokenBalance';
-import {TotalSupply,GetVault} from '../eth/vault';
+import {TotalSupply,GetVault, Deposit} from '../eth/vault';
 import { useState, useEffect } from 'react'
+import {contractAddress} from '../../helpers/connector';
+
 
 import './Main.scss';
 
@@ -12,8 +14,17 @@ const ENTER_KEY_CODE = 'Enter';
 
 export default function Main(props) {
   const isButtonDisabled = props.fetching;
-  const vault = GetVault("0x2c15A315610Bfa5248E4CbCbd693320e9D8E03Cc")
+  const vault = GetVault(contractAddress("vault"))
+  const [input1, setInput1] = useState('');
+  const [input2, setInput2] = useState('');
+  const [decimals1, setDecimals1] = useState()
+  const [decimals2, setDecimals2] = useState()
 
+  const onDepositClick = () => {
+    const val1 = parseFloat(input1) * Math.pow(10,decimals1)
+    const val2 = parseFloat(input2) * Math.pow(10,decimals2)
+    Deposit(vault, val2, val1)
+  }
 
   return (
     <div className="main-container">
@@ -31,9 +42,10 @@ export default function Main(props) {
           placeholder="0.0"
           className="address-input"
           disabled={ props.fetching }
-          onChange={ (e) => props.setSearchAddress(e.target.value) }
+          value={input1}
+          onChange={ (e) => setInput1(e.target.value) }
         />
-        <label style={{padding: "1em"}}>Your balance: <ETHBalance /></label>
+        <label style={{padding: "1em"}}>Your balance: <TokenBalance address={contractAddress("eth")} decimals={decimals1} setDecimals={setDecimals1} /></label>
       </div>
       
       
@@ -45,10 +57,11 @@ export default function Main(props) {
           placeholder="0.0"
           className="address-input"
           disabled={ props.fetching }
-          onChange={ (e) => props.setSearchAddress(e.target.value) }
+          value={input2}
+          onChange={ (e) => setInput2(e.target.value) }
         />
 
-        <label style={{padding: "1em"}}>Your balance: <TokenBalance address="0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" /></label>
+        <label style={{padding: "1em"}}>Your balance: <TokenBalance address={contractAddress("usdc")} decimals={decimals2} setDecimals={setDecimals2} /></label>
       </div>
 
       <div className="element">
@@ -62,6 +75,14 @@ export default function Main(props) {
               <Loader /> :
               DEFAULT_BUTTON_TEXT
           }
+        </button>
+
+        <button
+          className={`search-button`}
+          onClick={ onDepositClick }
+          disabled={ isButtonDisabled }
+        >
+          Deposit
         </button>
       </div>
     </div>
