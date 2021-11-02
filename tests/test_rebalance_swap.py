@@ -1,9 +1,8 @@
 from brownie import chain, reverts
 from pytest import approx
 
-
-
 """"
+VAULT
 Ranges are set correctly
 """
 def test_rebalance_swap(vault, 
@@ -34,9 +33,6 @@ def test_rebalance_swap(vault,
     "baseUpper tick is \n" + str(baseUpper) + "\n" +
     "baseLower price is \n" + str(baseLowerPrice) + "\n" +
     "baseUpper price is \n" + str(baseUpperPrice))
-
-    # Mint some liquidity
-    # usdc 6 decimals, eth 18
     
     vault.deposit(1e16, 1e18, 0, 0, user, {"from": user})
 
@@ -81,3 +77,75 @@ def test_rebalance_swap(vault,
 
     assert vault.baseLower() == - 60000
     assert vault.baseUpper() == 60000
+
+""""
+Strategy
+Ranges are set correctly
+"""
+def test_strategy_rebalance(
+    vault,
+    pool,
+    UniStrategy,
+    tokens,
+    router,
+    getPositions,
+    gov,
+    user,
+    keeper
+):
+    """
+    constructor(
+        address _vault,
+        int24 _baseThreshold,
+        //int24 _limitThreshold,
+        int24 _maxTwapDeviation,
+        uint32 _twapDuration,
+        address _keeper
+    )
+    """
+    baseThreshold = 60000
+    strategy = gov.deploy(UniStrategy, vault, baseThreshold, 200000, 600, keeper)
+    vault.setStrategy(strategy, {"from": gov})
+    min_sqrt = 4295128739
+
+
+    # Mint some liquidity
+    vault.deposit(1e16, 1e18, 0, 0, user, {"from": user})
+    strategy.rebalance(1e9, min_sqrt + 1, {"from": keeper})
+
+    # Store totals
+    total0, total1 = vault.getTotalAmounts()
+    print("In liquidity pools: \n" + str(total0) + "\n" + 
+    "total1After \n" + str(total1) + "\n")
+
+    balance0 = vault.getBalance0()
+    balance1 = vault.getBalance1()
+    print("In vault: \n" + str(balance0) + "\n" + 
+    "total1After \n" + str(balance1) + "\n")
+
+    # Do a swap to move the price
+    
+    qty = 1e16 * [100, 1][True] * [1, 100][False]
+    router.swap(pool, True, qty, {"from": gov})
+    
+    # fast forward 1 day
+    chain.sleep(86400)
+
+    # Store totals
+    total0, total1 = vault.getTotalAmounts()
+    print("In liquidity pools: \n" + str(total0) + "\n" + 
+    "total1After \n" + str(total1) + "\n")
+
+    balance0 = vault.getBalance0()
+    balance1 = vault.getBalance1()
+    print("In vault: \n" + str(balance0) + "\n" + 
+    "total1After \n" + str(balance1) + "\n")
+
+    # Rebalance
+    tx = strategy.rebalance(1e9, min_sqrt + 1, {"from": keeper})
+
+    # Check ranges are set correctly
+    tick = pool.slot0()[1]
+    tickFloor = tick // 60 * 60
+    assert vault.baseLower() == tickFloor - baseThreshold
+    assert vault.baseUpper() == tickFloor + 60 + baseThreshold
