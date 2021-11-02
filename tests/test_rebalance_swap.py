@@ -45,9 +45,9 @@ def test_rebalance_swap(vault,
     print("total0 \n" + str(total0) + "\n" + 
     "total1 \n" + str(total1) + "\n")
     vault.rebalance(
-        1e9, # 10 
-        min_sqrt + 1,
-        - 60000, # tickFLoor - baseTreshold
+        1e9, # if positive swap token0 to token1, else token1 to token1
+       min_sqrt + 1,
+        -60000, # tickFLoor - baseTreshold
         60000, # tickCeil + baseTreshold
         {"from": strategy},
     )
