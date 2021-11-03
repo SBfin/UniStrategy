@@ -86,7 +86,6 @@ def test_rebalance_swap(vault,
 Strategy
 Ranges are set correctly
 """
-
 def test_strategy_rebalance(
     vault,
     pool,
