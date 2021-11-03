@@ -1,19 +1,15 @@
 from brownie import chain, reverts
 from pytest import approx
+import math
 
-""""
-VAULT
-Ranges are set correctly
-"""
 def test_rebalance_swap(vault, 
     strategy, 
     pool, 
     user, 
     keeper,
     tokens):
-    min_sqrt = 4295128739
-    max_sqrt = 1461446703485210103287273052203988822378723970342
 
+    
     tick = pool.slot0()[1]
     print("tick \n" + str(tick))
     tickFloor = tick // 60 * 60
@@ -23,13 +19,17 @@ def test_rebalance_swap(vault,
     print("tick \n" + str(pool.slot0()[1]))
     print("price \n" + str(price))
 
+    min_sqrt = int(math.sqrt(price - 90) * (1 << 96))  # sqrt(100) * 1*(2**96) For positive and negative x values, x << y is equivalent to x * 2**y
+    # https://docs.uniswap.org/protocol/reference/core/libraries/TickMath
+    max_sqrt = 1461446703485210103287273052203988822378723970342
+    print("min sqrt " + str(min_sqrt) + "max sqrt " + str(max_sqrt))
+    
     #check vault ranges
     baseLower = vault.baseLower()
     baseUpper = vault.baseUpper()
     baseLowerPrice = 1.0001**baseLower
     baseUpperPrice = 1.0001**baseUpper
-    print("baseLower tick is \n" + str(baseLower) 
-    + "\n" +
+    print("baseLower tick is \n" + str(baseLower) + "\n" +
     "baseUpper tick is \n" + str(baseUpper) + "\n" +
     "baseLower price is \n" + str(baseLowerPrice) + "\n" +
     "baseUpper price is \n" + str(baseUpperPrice))
@@ -40,9 +40,13 @@ def test_rebalance_swap(vault,
 
     print("total0 \n" + str(total0) + "\n" + 
     "total1 \n" + str(total1) + "\n")
+
+    amount = 1e9
+    sqrt = max_sqrt - 1 if amount < 0 else min_sqrt
+    print(str(sqrt))
     vault.rebalance(
-        1e9, # 10 
-        min_sqrt + 1,
+        amount, 
+        sqrt, # zeroForOne ? TickMath.MIN_SQRT_RATIO + 1 : TickMath.MAX_SQRT_RATIO - 1
         - 60000, # tickFLoor - baseTreshold
         60000, # tickCeil + baseTreshold
         {"from": strategy},
@@ -77,11 +81,12 @@ def test_rebalance_swap(vault,
 
     assert vault.baseLower() == - 60000
     assert vault.baseUpper() == 60000
-
-""""
+    
+"""
 Strategy
 Ranges are set correctly
 """
+
 def test_strategy_rebalance(
     vault,
     pool,
@@ -124,7 +129,6 @@ def test_strategy_rebalance(
     "total1After \n" + str(balance1) + "\n")
 
     # Do a swap to move the price
-    
     qty = 1e16 * [100, 1][True] * [1, 100][False]
     router.swap(pool, True, qty, {"from": gov})
     
@@ -149,3 +153,9 @@ def test_strategy_rebalance(
     tickFloor = tick // 60 * 60
     assert vault.baseLower() == tickFloor - baseThreshold
     assert vault.baseUpper() == tickFloor + 60 + baseThreshold
+
+
+"""
+Do a swap 50-50 in order to have few tokens left
+Ranges are set correctly
+"""
