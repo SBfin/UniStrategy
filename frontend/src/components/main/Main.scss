@@ -1,9 +1,11 @@
 @import './src/styles/colors.scss';
 
 .main-container {
-  width: 50%;
-  background-color: #191b1f;
+  width: 100%;
+  background-color: hsl(220, 11%, 11%);
   border-radius: 2rem;
+  padding: 1em;
+  margin-bottom: 0.5em;
 }
 
 @media only screen and (max-width: 1200px) {
