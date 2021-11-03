@@ -1,7 +1,7 @@
 import Loader from '../loader/Loader';
 import ETHBalance from '../eth/EthBalance';
 import {TokenBalance,Balance,Token,Decimals,Allowance,Approve} from '../eth/TokenBalance';
-import {TotalSupply,GetVault, Deposit,BalanceOf} from '../eth/vault';
+import {TotalSupply,GetVault, Deposit,BalanceOf,Withdraw} from '../eth/vault';
 import { useState, useEffect } from 'react'
 import {contractAddress} from '../../helpers/connector';
 
@@ -15,7 +15,8 @@ const ENTER_KEY_CODE = 'Enter';
 export default function Main(props) {
   const isButtonDisabled = props.fetching;
   const vault = GetVault(contractAddress("vault"))
-  const balanceUser = BalanceOf(vault)
+  const vaultDecimals = Decimals(vault)
+  const balanceUser = BalanceOf(vault,vaultDecimals)
 
   const eth = Token(contractAddress("eth"))
   const ethDecimals = Decimals(eth)
@@ -30,6 +31,7 @@ export default function Main(props) {
   
   const [input1, setInput1] = useState('');
   const [input2, setInput2] = useState('');
+  const [shares, setShares] = useState('');
 
   const [loader, setLoader] = useState(false);
 
@@ -38,6 +40,12 @@ export default function Main(props) {
     const val1 = parseFloat(input1) * Math.pow(10,ethDecimals)
     const val2 = parseFloat(input2) * Math.pow(10,usdcDecimals)
     await Deposit(vault, val2, val1)
+    window.location.reload(false);
+  }
+  const onWithdrawClick = async () => {
+    setLoader(true);
+    const val = parseFloat(shares) * Math.pow(10,vaultDecimals)
+    await Withdraw(vault, val)
     window.location.reload(false);
   }
   const onApproveClick = async (contract, balance) => {
@@ -53,7 +61,7 @@ export default function Main(props) {
 
         <div className="element">
           <label className="paste-label" style={{textAlign: 'center', width: "100%"}}>ETH/USDC Vault Supply: 
-          <span style={{color: 'green'}}> {TotalSupply(vault)}</span></label>
+          <span style={{color: 'green'}}> {TotalSupply(vault,vaultDecimals)}</span></label>
         </div>
         
         <div className="element">
@@ -125,6 +133,27 @@ export default function Main(props) {
         <div className="element">
             <label className="paste-label" style={{textAlign: 'center', width: "100%"}}>Your balance: 
             <span style={{color: 'green'}}> {balanceUser}</span></label>
+          </div>
+
+          <div className="element">
+            <label className="paste-label" style={{lineHeight: '3em'}}>Shares</label>
+            <input
+              type="text"
+              placeholder="0.0"
+              className="address-input"
+              disabled={ props.fetching }
+              value={shares}
+              onChange={ (e) => setShares(e.target.value) }
+            />
+          </div>
+
+          <div className="element">
+          <button
+            className={`search-button`}
+            onClick={ onWithdrawClick }
+          >
+            Withdraw
+          </button> 
           </div>
       </div>
       }

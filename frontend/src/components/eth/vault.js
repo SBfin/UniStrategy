@@ -23,16 +23,14 @@ export function GetVault(address) {
   return vault
 }
 
-export function TotalSupply(vault) {
+
+
+export function TotalSupply(vault, decimals) {
   const [result, setResult] = useState(0)
-  const [decimals, setDecimals] = useState(0)
   useEffect(() => {
     if (!vault){
       return;
     }
-    vault.decimals()
-    .then((r) => {setDecimals(r)})
-    .catch((err) => {console.log(err)});
 
     vault.totalSupply()
     .then((r) => {
@@ -44,17 +42,13 @@ export function TotalSupply(vault) {
   return Math.round(parseFloat(formatUnits(result, decimals)) * 100) / 100
 }
 
-export function BalanceOf(vault) {
+export function BalanceOf(vault,decimals) {
   const {account, library, chainId} = useWeb3React()
   const [result, setResult] = useState(0)
-  const [decimals, setDecimals] = useState(0)
   useEffect(() => {
     if (!vault){
       return;
     }
-    vault.decimals()
-    .then((r) => {setDecimals(r)})
-    .catch((err) => {console.log(err)});
 
     vault.balanceOf(account)
     .then((r) => {
@@ -80,4 +74,18 @@ export async function Deposit(vault, val1, val2) {
   }).catch((err) => {
       console.log(err);
   }) 
+}
+
+export async function Withdraw(vault, shares) {
+  const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+  
+  return vault.withdraw(shares.toString(), 0, 0, accounts[0]).then((r) => {
+     console.log(r);
+     return r.wait();
+  }).then((r) => {
+    console.log("confirmed");
+    console.log(r);
+  }).catch((err) => {
+      console.log(err);
+  })
 }
