@@ -2,8 +2,8 @@ from brownie import (
     accounts,
     project,
     MockToken,
-    AlphaVault,
-    PassiveStrategy,
+    UniVault,
+    UniStrategy,
     TestRouter,
     ZERO_ADDRESS,
 )
@@ -19,8 +19,8 @@ FACTORY="0x1F98431c8aD98523631AE4a59f267346ea31F984"
 PROTOCOL_FEE = 10000
 MAX_TOTAL_SUPPLY = 1e32
 
-BASE_THRESHOLD = 3600
-LIMIT_THRESHOLD = 1200
+BASE_THRESHOLD = 3600 #1.43
+LIMIT_THRESHOLD = 1200 #1.12
 PERIOD = 43200  # 12 hours
 MIN_TICK_MOVE = 0
 MAX_TWAP_DEVIATION = 100  # 1%
@@ -28,7 +28,7 @@ TWAP_DURATION = 60  # 60 seconds
 
 
 def main():
-    deployer = accounts.load("deployer")
+    deployer = accounts.load("deployer2")
     print(deployer)
     UniswapV3Core = project.load("Uniswap/uniswap-v3-core@1.0.0")
 
@@ -68,36 +68,32 @@ def main():
     )
     time.sleep(15)
 
-    max_tick = 887272 // 60 * 60
+    max_tick = 887272 // 60 * 60 ## 246
     router.mint(
         pool, -max_tick, max_tick, 1e14, {"from": deployer}
     )
 
     vault = deployer.deploy(
-        AlphaVault,
+        UniVault,
         pool,
         PROTOCOL_FEE,
         MAX_TOTAL_SUPPLY,
         publish_source=True
     )
-    """
+    
     strategy = deployer.deploy(
-        PassiveStrategy,
+        UniStrategy,
         vault,
         BASE_THRESHOLD,
-        LIMIT_THRESHOLD,
-        PERIOD,
-        MIN_TICK_MOVE,
         MAX_TWAP_DEVIATION,
         TWAP_DURATION,
         deployer,
         publish_source=True,
-        gas_price=gas_strategy,
     )
     
     vault.setStrategy(strategy, {"from": deployer})
-    """
+
     print(f"Vault address: {vault.address}")
-    #print(f"Strategy address: {strategy.address}")
+    print(f"Strategy address: {strategy.address}")
     print(f"Router address: {router.address}")
     
