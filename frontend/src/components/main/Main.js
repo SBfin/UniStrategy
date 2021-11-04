@@ -94,7 +94,7 @@ export default function Main(props) {
         </div>
       
         <div className="element">
-          { ethAllowance == '0' ?
+          { ethAllowance == '0' &&
           <button
             className={`search-button ${isButtonDisabled ? 'search-button-clicked' : '' }`}
             onClick={ () => onApproveClick(eth, ethBalance) }
@@ -102,8 +102,8 @@ export default function Main(props) {
           >
             Approve ETH
           </button>
-          :
-          usdcAllowance == '0' ?
+         }
+          {usdcAllowance == '0' ?
           <button
             className={`search-button ${isButtonDisabled ? 'search-button-clicked' : '' }`}
             onClick={ () => onApproveClick(usdc, usdcBalance) }
