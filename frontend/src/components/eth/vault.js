@@ -15,7 +15,8 @@ export function GetTotalAmounts(vault) {
     vault.getTotalAmounts()
     .then((r) => {
       setResult(r);
-      console.log("total0:",r.total0.toNumber(), )
+      console.log("total0:",r.total0.toNumber())
+      console.log("total1",r.total1.toString())
     }).catch((err) => {
         console.log(err);
     }) 
