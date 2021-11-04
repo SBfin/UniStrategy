@@ -1,8 +1,7 @@
 import Loader from '../loader/Loader';
-import ETHBalance from '../eth/EthBalance';
 import {TokenBalance,Balance,Token,Decimals,Allowance,Approve} from '../eth/TokenBalance';
-import {TotalSupply,GetVault, Deposit,BalanceOf,Withdraw} from '../eth/vault';
-import { useState, useEffect } from 'react'
+import {TotalSupply,GetVault,GetStrategy, Deposit,BalanceOf,Withdraw,GetTotalAmounts} from '../eth/vault';
+import { useState } from 'react'
 import {contractAddress} from '../../helpers/connector';
 
 
@@ -17,6 +16,8 @@ export default function Main(props) {
   const vault = GetVault(contractAddress("vault"))
   const vaultDecimals = Decimals(vault)
   const balanceUser = BalanceOf(vault,vaultDecimals)
+
+  const vaultTotalAmounts = GetTotalAmounts(vault);
 
   const eth = Token(contractAddress("eth"))
   const ethDecimals = Decimals(eth)
@@ -53,6 +54,8 @@ export default function Main(props) {
     await Approve(contract, vault, balance)
     window.location.reload(false);
   }
+
+  console.log(vaultTotalAmounts)
 
   return (
     <div style={{textAlign: 'center', width: "50%"}}>
@@ -94,7 +97,7 @@ export default function Main(props) {
         </div>
       
         <div className="element">
-          { ethAllowance == '0' ?
+          { ethAllowance == '0' &&
           <button
             className={`search-button ${isButtonDisabled ? 'search-button-clicked' : '' }`}
             onClick={ () => onApproveClick(eth, ethBalance) }
@@ -102,8 +105,8 @@ export default function Main(props) {
           >
             Approve ETH
           </button>
-          :
-          usdcAllowance == '0' ?
+         }
+          {usdcAllowance == '0' ?
           <button
             className={`search-button ${isButtonDisabled ? 'search-button-clicked' : '' }`}
             onClick={ () => onApproveClick(usdc, usdcBalance) }

@@ -1,8 +1,28 @@
 import { useState, useEffect } from 'react'
 import { useWeb3React } from '@web3-react/core'
-import AlphaVault from "./abi/AlphaVault.json";
+import UniVault from "./abi/UniVault.json";
 import {Contract} from "@ethersproject/contracts";
 import {formatUnits} from "@ethersproject/units";
+
+
+export function GetTotalAmounts(vault) {
+  const [result, setResult] = useState(0)
+  useEffect(() => {
+    if (!vault){
+      return;
+    }
+
+    vault.getTotalAmounts()
+    .then((r) => {
+      setResult(r);
+      console.log("total0:",r.total0.toNumber())
+      console.log("total1",r.total1.toString())
+    }).catch((err) => {
+        console.log(err);
+    }) 
+  }, [vault])
+  return 1
+}
 
 export function GetVault(address) {
   const {account, library, chainId} = useWeb3React()
@@ -16,14 +36,12 @@ export function GetVault(address) {
     }
     
     const signer = library.getSigner(account).connectUnchecked()
-    const contract = new Contract(address, AlphaVault.abi, signer)
+    const contract = new Contract(address, UniVault.abi, signer)
 
     setVault(contract)
   }, [account, library, chainId])
   return vault
 }
-
-
 
 export function TotalSupply(vault, decimals) {
   const [result, setResult] = useState(0)
