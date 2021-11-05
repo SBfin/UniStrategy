@@ -7,11 +7,11 @@ from brownie import (
     TestRouter,
     ZERO_ADDRESS,
 )
-from brownie.network.gas.strategies import GasNowScalingStrategy
+from brownie.network.gas.strategies import ExponentialScalingStrategy
 from math import floor, sqrt
 import time
 import os
-
+from brownie.network import gas_price
 
 # Uniswap v3 factory on Ropsten
 FACTORY="0x1F98431c8aD98523631AE4a59f267346ea31F984"
@@ -32,66 +32,65 @@ def main():
     print(deployer)
     UniswapV3Core = project.load("Uniswap/uniswap-v3-core@1.0.0")
 
-    gas_strategy = GasNowScalingStrategy()
+    gas_strategy = ExponentialScalingStrategy("10 gwei", "1000 gwei")
+    gas_price(gas_strategy)
 
-    eth = deployer.deploy(MockToken, "ETH", "ETH", 18, publish_source=True)
-    usdc = deployer.deploy(MockToken, "USDC", "USDC", 6)
+    eth = MockToken.deploy("ETH", "ETH", "18", {"from": deployer})
+    usdc = MockToken.deploy("USDC", "USDC", "6", {"from": deployer})
 
-    eth.mint(deployer, 100 * 1e18)
-    usdc.mint(deployer, 100000 * 1e6)
+    eth.mint(deployer, 100 * 1e18, {"from": deployer})
+    usdc.mint(deployer, 100000 * 1e6, {"from": deployer})
     
     factory = UniswapV3Core.interface.IUniswapV3Factory(FACTORY)
-    factory.createPool(eth, usdc, 3000, {"from": deployer})
+    factory.createPool(eth, usdc, 3000, {"from": deployer, "gas_price": gas_strategy})
     time.sleep(15)
 
     pool = UniswapV3Core.interface.IUniswapV3Pool(factory.getPool(eth, usdc, 3000))
 
-    inverse = pool.token0() == usdc
+    inverse = pool.token0() == usdc.address
     price = 1e18 / 2000e6 if inverse else 2000e6 / 1e18
 
     # Set ETH/USDC price to 2000
     pool.initialize(
-        floor(sqrt(price) * (1 << 96)), {"from": deployer}
+        floor(sqrt(price) * (1 << 96)), {"from": deployer, "gas_price": gas_strategy}
     )
 
     # Increase cardinality so TWAP works
     pool.increaseObservationCardinalityNext(
-        100, {"from": deployer}
+        100, {"from": deployer, "gas_price": gas_strategy}
     )
 
-    router = deployer.deploy(TestRouter)
-    MockToken.at(eth).approve(
-        router, 1 << 255, {"from": deployer}
+    router = TestRouter.deploy({"from": deployer})
+    eth.approve(
+        router, 1 << 255, {"from": deployer, "gas_price": gas_strategy}
     )
-    MockToken.at(usdc).approve(
-        router, 1 << 255, {"from": deployer}
+    usdc.approve(
+        router, 1 << 255, {"from": deployer, "gas_price": gas_strategy}
     )
     time.sleep(15)
 
     max_tick = 887272 // 60 * 60 ## 246
     router.mint(
-        pool, -max_tick, max_tick, 1e14, {"from": deployer}
+        pool, -max_tick, max_tick, 1e14, {"from": deployer, "gas_price": gas_strategy}
     )
 
-    vault = deployer.deploy(
-        UniVault,
+    vault = UniVault.deploy(
         pool,
         PROTOCOL_FEE,
         MAX_TOTAL_SUPPLY,
-        publish_source=True
+        {"from": deployer}
     )
     
-    strategy = deployer.deploy(
-        UniStrategy,
+    strategy = UniStrategy.deploy(
         vault,
         BASE_THRESHOLD,
         MAX_TWAP_DEVIATION,
         TWAP_DURATION,
         deployer,
-        publish_source=True,
+        {"from": deployer}
     )
     
-    vault.setStrategy(strategy, {"from": deployer})
+    vault.setStrategy(strategy, {"from": deployer, "gas_price": gas_strategy})
 
     print(f"Vault address: {vault.address}")
     print(f"Strategy address: {strategy.address}")
