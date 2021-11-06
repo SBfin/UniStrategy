@@ -1,8 +1,9 @@
 import Loader from '../loader/Loader';
 import {TokenBalance,Balance,Token,Decimals,Allowance,Approve} from '../eth/TokenBalance';
+import EthBalance from '../eth/EthBalance';
 import {TotalSupply,GetVault,GetStrategy, Deposit,BalanceOf,Withdraw,GetTotalAmounts} from '../eth/vault';
 import { useState } from 'react'
-import {contractAddress} from '../../helpers/connector';
+import {ContractAddress} from '../../helpers/connector';
 
 
 import './Main.scss';
@@ -13,21 +14,22 @@ const ENTER_KEY_CODE = 'Enter';
 
 export default function Main(props) {
   const isButtonDisabled = props.fetching;
-  const vault = GetVault(contractAddress("vault"))
+  const vaultContractAddress = ContractAddress("vault")
+  const vault = GetVault(vaultContractAddress)
   const vaultDecimals = Decimals(vault)
   const balanceUser = BalanceOf(vault,vaultDecimals)
 
-  const vaultTotalAmounts = GetTotalAmounts(vault);
+  //const vaultTotalAmounts = GetTotalAmounts(vault);
 
-  const eth = Token(contractAddress("eth"))
+  const eth = Token(ContractAddress("eth"))
   const ethDecimals = Decimals(eth)
   const ethBalance = Balance(eth)
   const ethAllowance = Allowance(eth, vault)
   
-  const usdc = Token(contractAddress("usdc"))
-  const usdcDecimals = Decimals(usdc)
-  const usdcBalance = Balance(usdc)
-  const usdcAllowance = Allowance(usdc, vault)
+  const dai = Token(ContractAddress("dai"))
+  const daiDecimals = Decimals(dai)
+  const daiBalance = Balance(dai)
+  const daiAllowance = Allowance(dai, vault)
   
   
   const [input1, setInput1] = useState('');
@@ -39,7 +41,7 @@ export default function Main(props) {
   const onDepositClick = async () => {
     setLoader(true);
     const val1 = parseFloat(input1) * Math.pow(10,ethDecimals)
-    const val2 = parseFloat(input2) * Math.pow(10,usdcDecimals)
+    const val2 = parseFloat(input2) * Math.pow(10,daiDecimals)
     await Deposit(vault, val2, val1)
     window.location.reload(false);
   }
@@ -55,20 +57,25 @@ export default function Main(props) {
     window.location.reload(false);
   }
 
-  console.log(vaultTotalAmounts)
-
   return (
     <div style={{textAlign: 'center', width: "50%"}}>
+
+      { vaultContractAddress==null &&
+      <div className="main-container" style={{background: 'red'}}>
+        <div>THIS CURRENT IS NOT SUPPORTED</div>
+        <div>Please select a supported one</div>
+      </div>
+      }
       <div className="main-container">
         
 
         <div className="element">
-          <label className="paste-label" style={{textAlign: 'center', width: "100%"}}>ETH/USDC Vault Supply: 
+          <label className="paste-label" style={{textAlign: 'center', width: "100%"}}>ETH/DAI Vault Supply: 
           <span style={{color: 'green'}}> {TotalSupply(vault,vaultDecimals)}</span></label>
         </div>
         
         <div className="element">
-          <label className="paste-label" style={{lineHeight: '3em'}}>ETH</label>
+          <label className="paste-label" style={{lineHeight: '3em'}}>WETH</label>
           <input
             type="text"
             placeholder="0.0"
@@ -83,7 +90,7 @@ export default function Main(props) {
         
 
         <div className="element">
-          <label className="paste-label" style={{lineHeight: '3em'}}>USDC</label>
+          <label className="paste-label" style={{lineHeight: '3em'}}>DAI</label>
           <input
             type="text"
             placeholder="0.0"
@@ -93,7 +100,7 @@ export default function Main(props) {
             onChange={ (e) => setInput2(e.target.value) }
           />
 
-          <label style={{padding: "1em"}}>Your balance: <TokenBalance balance={usdcBalance} decimals={usdcDecimals} /></label>
+          <label style={{padding: "1em"}}>Your balance: <TokenBalance balance={daiBalance} decimals={daiDecimals} /></label>
         </div>
       
         <div className="element">
@@ -103,18 +110,18 @@ export default function Main(props) {
             onClick={ () => onApproveClick(eth, ethBalance) }
             disabled={ isButtonDisabled }
           >
-            Approve ETH
+            Approve WETH
           </button>
          }
-          {usdcAllowance == '0' ?
+          {daiAllowance == '0' ?
           <button
             className={`search-button ${isButtonDisabled ? 'search-button-clicked' : '' }`}
-            onClick={ () => onApproveClick(usdc, usdcBalance) }
+            onClick={ () => onApproveClick(dai, daiBalance) }
             disabled={ isButtonDisabled }
           >
-            Approve USDC
+            Approve DAI
           </button>
-          :ethAllowance !='0' && usdcAllowance!='0' &&
+          :ethAllowance !='0' && daiAllowance!='0' &&
           
           <button
             className={`search-button`}

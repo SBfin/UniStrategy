@@ -21,7 +21,7 @@ export function GetTotalAmounts(vault) {
         console.log(err);
     }) 
   }, [vault])
-  return 1
+  return result
 }
 
 export function GetVault(address) {
@@ -31,7 +31,7 @@ export function GetVault(address) {
 
   useEffect(() => {
     console.log("loading contract")
-    if (!(!!account || !!library)) {
+    if (!(!!account || !!library) || !address) {
       return
     }
     
