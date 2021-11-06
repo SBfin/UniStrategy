@@ -5,39 +5,13 @@ import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 import "./UniVault.sol";
 
-/**
- * @title   Alpha Strategy
- * @notice  Rebalancing strategy for Alpha Vault that maintains the two
- *          following range orders:
- *
- *          1. Base order is placed between X - B and X + B + TS.
- *          2. Limit order is placed between X - L and X, or between X + TS
- *             and X + L + TS, depending on which token it holds more of.
- *
- *          where:
- *
- *              X = current tick rounded down to multiple of tick spacing
- *              TS = tick spacing
- *              B = base threshold
- *              L = limit threshold
- *
- *          Note that after these two orders, the vault should have deposited
- *          all its tokens and should only have a few wei left.
- *
- *          Because the limit order tries to sell whichever token the vault
- *          holds more of, the vault's holdings will have a tendency to get
- *          closer to a 1:1 balance. This enables it to continue providing
- *          liquidity without running out of inventory of either token, and
- *          achieves this without the need to swap directly on Uniswap and pay
- *          fees.
- */
+
 contract UniStrategy {
     UniVault public immutable vault;
     IUniswapV3Pool public immutable pool;
     int24 public immutable tickSpacing;
 
     int24 public baseThreshold;
-    //int24 public limitThreshold;
     int24 public maxTwapDeviation;
     uint32 public twapDuration;
     address public keeper;
@@ -46,9 +20,8 @@ contract UniStrategy {
     int24 public lastTick;
 
     /**
-     * @param _vault Underlying Alpha Vault
+     * @param _vault Underlying Uni Vault
      * @param _baseThreshold Used to determine base order range
-     
      * @param _maxTwapDeviation Max deviation from TWAP during rebalance
      * @param _twapDuration TWAP duration in seconds for rebalance check
      * @param _keeper Account that can call `rebalance()`
@@ -57,7 +30,6 @@ contract UniStrategy {
     constructor(
         address _vault,
         int24 _baseThreshold,
-        //int24 _limitThreshold,
         int24 _maxTwapDeviation,
         uint32 _twapDuration,
         address _keeper
@@ -70,13 +42,11 @@ contract UniStrategy {
         tickSpacing = _tickSpacing;
 
         baseThreshold = _baseThreshold;
-        //limitThreshold = _limitThreshold;
         maxTwapDeviation = _maxTwapDeviation;
         twapDuration = _twapDuration;
         keeper = _keeper;
 
         _checkThreshold(_baseThreshold, _tickSpacing);
-        //_checkThreshold(_limitThreshold, _tickSpacing);
         require(_maxTwapDeviation > 0, "maxTwapDeviation");
         require(_twapDuration > 0, "twapDuration");
 
@@ -86,41 +56,18 @@ contract UniStrategy {
     /**
      * @notice Calculates new ranges for orders and calls `vault.rebalance()`
      * so that vault can update its positions. Can only be called by keeper.
-     */
-     /* Silvio: Adding swap Amount and minprice to inputs
-     TODO: I removed checks (price extreme) to avoid stack error --> have to put them in place*/
+     **/
+
     function rebalance(int256 swapAmount, uint160 minPrice) external {
         require(msg.sender == keeper, "keeper");
         
         int24 _baseThreshold = baseThreshold;
-        //int24 _limitThreshold = limitThreshold;
-
-        // Check price is not too close to min/max allowed by Uniswap. Price
-        // shouldn't be this extreme unless something was wrong with the pool.
-        
+ 
         int24 tick = getTick(); //current price
         
-        /*
-        int24 maxThreshold =
-            _baseThreshold > _limitThreshold ? _baseThreshold : _limitThreshold;
-        require(tick > TickMath.MIN_TICK + maxThreshold + tickSpacing, "tick too low");
-        require(tick < TickMath.MAX_TICK - maxThreshold - tickSpacing, "tick too high");*/
-
-        // Check price has not moved a lot recently. This mitigates price
-        // manipulation during rebalance and also prevents placing orders
-        // when it's too volatile.
-        /*
-        int24 twap = getTwap(); // time weighted average
-        int24 deviation = tick > twap ? tick - twap : twap - tick; //deviation to be positive
-        require(deviation <= maxTwapDeviation, "maxTwapDeviation"); 
-        */
-        // Defining a lower and upper bound on tick (current price)
-        // tickCeil > tickFloor
         int24 tickFloor = _floor(tick); 
         int24 tickCeil = tickFloor + tickSpacing; 
-
-        // Silvio
-        // Base order only       
+  
         vault.rebalance(
             swapAmount,
             minPrice,
@@ -171,12 +118,6 @@ contract UniStrategy {
         _checkThreshold(_baseThreshold, tickSpacing);
         baseThreshold = _baseThreshold;
     }
-
-    /*
-    function setLimitThreshold(int24 _limitThreshold) external onlyGovernance {
-        _checkThreshold(_limitThreshold, tickSpacing);
-        limitThreshold = _limitThreshold;
-    }*/
 
     function setMaxTwapDeviation(int24 _maxTwapDeviation) external onlyGovernance {
         require(_maxTwapDeviation > 0, "maxTwapDeviation");

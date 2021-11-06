@@ -18,7 +18,7 @@ import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 import "../interfaces/IVault.sol";
 
 /**
- * @title   Alpha Vault
+ * @title   Uni Vault
  * @notice  A vault that provides liquidity on Uniswap V3.
  */
 contract UniVault is
@@ -295,15 +295,8 @@ contract UniVault is
     ) external nonReentrant {
         require(msg.sender == strategy, "strategy");
         _checkRange(_baseLower, _baseUpper);
-        /*
-        _checkRange(_bidLower, _bidUpper);
-        _checkRange(_askLower, _askUpper);*/
 
         (, int24 tick, , , , , ) = pool.slot0();
-        /*
-        require(_bidUpper <= tick, "bidUpper");
-        require(_askLower > tick, "askLower"); */
-        // inequality is strict as tick is rounded down
 
         // Withdraw all current liquidity from Uniswap pool
         {
@@ -315,23 +308,18 @@ contract UniVault is
         uint256 balance0 = getBalance0();
         uint256 balance1 = getBalance1();
         emit Snapshot(tick, balance0, balance1, totalSupply());
-
-        // Compute swap amount
-        // balance of the tokens should be same
-        // TODO : swap here to maintain 50%      
         
         if (swapAmount != 0) {
             pool.swap(
                 address(this),
-                swapAmount > 0, // The direction of the swap, true for token0 to token1, false for token1 to token0
-                swapAmount > 0 ? swapAmount : -swapAmount, // The amount of the swap, which implicitly configures the swap as exact input (positive), or exact output (negative)
-                sqrtPriceLimitX96, // The Q64.96 sqrt price limit. If zero for one, the price cannot be less than this value after the swap. If one for zero, the price cannot be greater than this value after the swap
+                swapAmount > 0, 
+                swapAmount > 0 ? swapAmount : -swapAmount, 
+                sqrtPriceLimitX96,
                 ""
             );
             balance0 = getBalance0();
             balance1 = getBalance1();
         }
-
 
         // Place base order on Uniswap
         uint128 liquidity = _liquidityForAmounts(_baseLower, _baseUpper, balance0, balance1);
@@ -418,9 +406,6 @@ contract UniVault is
      */
     function getTotalAmounts() public view override returns (uint256 total0, uint256 total1) {
         (uint256 baseAmount0, uint256 baseAmount1) = getPositionAmounts(baseLower, baseUpper);
-        /*
-        (uint256 limitAmount0, uint256 limitAmount1) = getPositionAmounts(limitLower, limitUpper);
-        (uint256 askAmount0, uint256 askAmount1) = getPositionAmounts(askLower, askUpper);*/
         total0 = getBalance0().add(baseAmount0);//.add(limitAmount0).add(askAmount0);
         total1 = getBalance1().add(baseAmount1);//.add(limitAmount1).add(askAmount0);
     }
