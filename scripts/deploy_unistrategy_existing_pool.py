@@ -1,4 +1,4 @@
-from brownie import accounts, AlphaVault, UniStrategy
+from brownie import accounts, UniVault, UniStrategy
 from brownie.network.gas.strategies import ExponentialScalingStrategy
 
 
@@ -21,7 +21,7 @@ def main():
     gas_strategy = ExponentialScalingStrategy("10 gwei", "1000 gwei")
 
     vault = deployer.deploy(
-        AlphaVault,
+        UniVault,
         POOL,
         PROTOCOL_FEE,
         MAX_TOTAL_SUPPLY,
