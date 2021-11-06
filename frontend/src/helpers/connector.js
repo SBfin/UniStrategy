@@ -6,7 +6,7 @@ export const MetaMask = new InjectedConnector({ supportedNetworks: [1, 3, 4, 5, 
 
 const contracts = {
   3: {"vault": "0x384c0495F4bD3b91B5bC6b8b0a2DAb5a23d20C63", "eth": "0xc778417e063141139fce010982780140aa0cd5ab", "dai": "0xaD6D458402F60fD3Bd25163575031ACDce07538D"}, // Ropsten
-  4: {"vault": "", "eth": "", "dai": ""}, // Rinkeby
+  69: {"vault": "0xa919F8Dd481dE4050F660738c0052a17d62c1d09", "eth": "0x7Dd703927F7BD4972b78F64A43A48aC5e9185954", "dai": "0xA6d0aE178b75b5BECfC909Aa408611cbc1a30170"}, // Optimism Kovan
 }
 
 export function ContractAddress(name) {

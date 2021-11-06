@@ -32,14 +32,17 @@ def main():
     print(deployer)
     UniswapV3Core = project.load("Uniswap/uniswap-v3-core@1.0.0")
 
-    gas_strategy = ExponentialScalingStrategy("10 gwei", "1000 gwei")
+    gas_strategy = ExponentialScalingStrategy("10000 wei", "1000 gwei")
     gas_price(gas_strategy)
 
-    eth = MockToken.at("0xc778417e063141139fce010982780140aa0cd5ab")
-    dai = MockToken.at("0xad6d458402f60fd3bd25163575031acdce07538d")
+    eth = MockToken.deploy("ETH", "ETH", "18", {"from": deployer})
+    dai = MockToken.deploy("DAI", "DAI", "6", {"from": deployer})
+
+    eth.mint(deployer, 100 * 1e18, {"from": deployer})
+    dai.mint(deployer, 100000 * 1e6, {"from": deployer})
     
     factory = UniswapV3Core.interface.IUniswapV3Factory(FACTORY)
-    factory.createPool(eth, usdc, 3000, {"from": deployer, "gas_price": gas_strategy})
+    factory.createPool(eth, dai, 3000, {"from": deployer, "gas_price": gas_strategy})
     time.sleep(15)
 
     pool = UniswapV3Core.interface.IUniswapV3Pool(factory.getPool(eth, dai, 3000))
@@ -61,7 +64,7 @@ def main():
     eth.approve(
         router, 1 << 255, {"from": deployer, "gas_price": gas_strategy}
     )
-    usdc.approve(
+    dai.approve(
         router, 1 << 255, {"from": deployer, "gas_price": gas_strategy}
     )
     time.sleep(15)
