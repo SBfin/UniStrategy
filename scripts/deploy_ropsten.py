@@ -32,25 +32,25 @@ def main():
     print(deployer)
     UniswapV3Core = project.load("Uniswap/uniswap-v3-core@1.0.0")
 
-    gas_strategy = ExponentialScalingStrategy("10 gwei", "1000 gwei")
+    gas_strategy = ExponentialScalingStrategy("10000 wei", "1000 gwei")
     gas_price(gas_strategy)
 
     eth = MockToken.deploy("ETH", "ETH", "18", {"from": deployer})
-    usdc = MockToken.deploy("USDC", "USDC", "6", {"from": deployer})
+    dai = MockToken.deploy("DAI", "DAI", "6", {"from": deployer})
 
     eth.mint(deployer, 100 * 1e18, {"from": deployer})
-    usdc.mint(deployer, 100000 * 1e6, {"from": deployer})
+    dai.mint(deployer, 100000 * 1e6, {"from": deployer})
     
     factory = UniswapV3Core.interface.IUniswapV3Factory(FACTORY)
-    factory.createPool(eth, usdc, 3000, {"from": deployer, "gas_price": gas_strategy})
+    factory.createPool(eth, dai, 3000, {"from": deployer, "gas_price": gas_strategy})
     time.sleep(15)
 
-    pool = UniswapV3Core.interface.IUniswapV3Pool(factory.getPool(eth, usdc, 3000))
+    pool = UniswapV3Core.interface.IUniswapV3Pool(factory.getPool(eth, dai, 3000))
 
-    inverse = pool.token0() == usdc.address
+    inverse = pool.token0() == dai.address
     price = 1e18 / 2000e6 if inverse else 2000e6 / 1e18
 
-    # Set ETH/USDC price to 2000
+    # Set ETH/DAI price to 2000
     pool.initialize(
         floor(sqrt(price) * (1 << 96)), {"from": deployer, "gas_price": gas_strategy}
     )
@@ -64,7 +64,7 @@ def main():
     eth.approve(
         router, 1 << 255, {"from": deployer, "gas_price": gas_strategy}
     )
-    usdc.approve(
+    dai.approve(
         router, 1 << 255, {"from": deployer, "gas_price": gas_strategy}
     )
     time.sleep(15)

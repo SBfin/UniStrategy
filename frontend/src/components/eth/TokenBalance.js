@@ -12,7 +12,7 @@ export function Token(address){
     //const [decimals, setDecimals] = useState()
 
     useEffect(async () => {
-      if (!(!!account || !!library)) {
+      if (!(!!account || !!library) || !address) {
           return
       }
       // listen for changes on an Ethereum address
